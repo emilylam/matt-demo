@@ -1,11 +1,11 @@
 /*
-Matt-demo, routine
+MATT-demo, routine
 Emily Lam, March 2018
 */
 
 // Serial port
 var SerialPort = require('serialport');
-var port_xy = new SerialPort('/dev/cu.usbmodem14121', {
+var port_xy = new SerialPort('/dev/cu.usbmodem1411', {
   baudRate: 9600
 });
 
@@ -26,14 +26,28 @@ port_xy.on('open', () => console.log('Port open'));
 port_xy.pipe(parser);
 parser.on('data', console.log);
 
-setTimeout(start_loop, 2000);
-function start_loop() {setInterval(MATT_routine, 1000);}
+// Home first
+setTimeout(start_homing, 2000);
+function start_homing() {
+  port_xy.write('$H\r', function(err) {
+    if (err) {
+      return console.log('Error on write: ', err.message);
+    }
+    console.log('Homing');
+  });
+}
+
+// Then start routine
+setTimeout(start_loop, 7000);
+function start_loop() {setInterval(MATT_routine, 220);}
 
 x = 0;
 y = 0;
 xy = 1; // xy = 1 move x, xy = 2 move y
-max_x = 10;
-max_y = 10;
+max_x = 50;
+max_y = 50;
+min_x = 10;
+min_y = 20;
 var msg;
 function MATT_routine() {
   if (xy == 1) {
@@ -49,12 +63,12 @@ function MATT_routine() {
   else if (xy == 3) {
     x = x - 1;
     msg = "X-" + x + "\r";
-    if (x < 2) {xy = 4;}
+    if (x < min_x) {xy = 4;}
   }
   else if (xy == 4) {
     y = y - 1;
     msg = "Y-" + y + "\r";
-    if (y < 2) {xy = 1;}
+    if (y < min_y) {xy = 1;}
   }
 
 
